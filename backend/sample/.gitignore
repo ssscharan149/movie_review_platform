@@ -1,0 +1,22 @@
+# Build output
+target/
+
+# Maven wrapper jar cache (optional keep if generated)
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env / secrets
+.env
+.env.*
+application-local.properties
