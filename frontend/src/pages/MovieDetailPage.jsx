@@ -272,6 +272,11 @@ export default function MovieDetailPage({ onMessage }) {
             </li>
           ))}
         </ul>
+        {reviews.length === 0 && (
+          <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-700">
+            No reviews yet for this movie.
+          </div>
+        )}
         <div className="mt-4 flex items-center justify-between">
           <button
             type="button"

@@ -18,6 +18,10 @@ export default function MoviesPage({ movies, loading, page, totalPages, totalEle
 
       {loading ? (
         <p className="text-sm text-slate-600">Loading movies...</p>
+      ) : movies.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
+          No movies available yet. If you are an admin, go to <span className="font-semibold">Admin</span> and create your first movie.
+        </div>
       ) : (
         <>
           <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

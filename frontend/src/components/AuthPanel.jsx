@@ -13,6 +13,7 @@ export default function AuthPanel({ onSuccess, onError }) {
     role: "USER",
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sanitizeText = (value) => value.replace(/[<>"'`]/g, "").trim();
 
@@ -81,6 +82,7 @@ export default function AuthPanel({ onSuccess, onError }) {
     }
 
     try {
+      setIsSubmitting(true);
       const endpoint = mode === "register" ? "/auth/register" : "/auth/login";
       const { data } = await client.post(endpoint, cleanedPayload);
       onSuccess(data, mode);
@@ -106,6 +108,8 @@ export default function AuthPanel({ onSuccess, onError }) {
       }
 
       onError(`Auth failed: ${apiMessage || error.message}${detailText}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,8 +167,15 @@ export default function AuthPanel({ onSuccess, onError }) {
           </>
         )}
 
-        <button type="submit" className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
-          {mode === "register" ? "Register & Login" : "Login"}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {isSubmitting && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white" />
+          )}
+          {isSubmitting ? "Please wait..." : mode === "register" ? "Register & Login" : "Login"}
         </button>
       </form>
 

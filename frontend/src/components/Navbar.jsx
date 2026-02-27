@@ -27,6 +27,11 @@ export default function Navbar({ onMessage }) {
           <NavLink to="/movies" className={navItemClass}>
             Movies
           </NavLink>
+          {user?.role === "ADMIN" && (
+            <NavLink to="/admin" className={navItemClass}>
+              Admin
+            </NavLink>
+          )}
           <NavLink to="/profile" className={navItemClass}>
             Profile
           </NavLink>

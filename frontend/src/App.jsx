@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import client from "./api/client";
+import AdminRoute from "./components/AdminRoute";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ToastStack from "./components/ToastStack";
 import { AuthProvider } from "./context/AuthContext";
+import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import MoviesPage from "./pages/MoviesPage";
@@ -11,7 +14,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ProfilePage from "./pages/ProfilePage";
 
 function AppShell() {
-  const [message, setMessage] = useState("");
+  const [toasts, setToasts] = useState([]);
   const [movies, setMovies] = useState([]);
   const [loadingMovies, setLoadingMovies] = useState(false);
   const [moviePage, setMoviePage] = useState({
@@ -33,7 +36,7 @@ function AppShell() {
         totalElements: data.totalElements ?? 0,
       }));
     } catch (error) {
-      setMessage(`Failed to load movies: ${error.response?.data?.message || error.message}`);
+      notify(`Failed to load movies: ${error.response?.data?.message || error.message}`, "error");
     } finally {
       setLoadingMovies(false);
     }
@@ -49,19 +52,26 @@ function AppShell() {
     loadMovies(nextPage);
   };
 
+  const notify = (message, type = "info") => {
+    const nextId = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id: nextId, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== nextId));
+    }, 4000);
+  };
+
+  const dismissToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
   return (
     <main className="mx-auto min-h-screen max-w-7xl px-4 py-6">
-      <Navbar onMessage={setMessage} />
-
-      {message && (
-        <p className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">
-          {message}
-        </p>
-      )}
+      <ToastStack toasts={toasts} onClose={dismissToast} />
+      <Navbar onMessage={notify} />
 
       <Routes>
         <Route path="/" element={<Navigate to="/movies" replace />} />
-        <Route path="/login" element={<LoginPage onMessage={setMessage} />} />
+        <Route path="/login" element={<LoginPage onMessage={notify} />} />
         <Route
           path="/movies"
           element={
@@ -75,7 +85,15 @@ function AppShell() {
             />
           }
         />
-        <Route path="/movies/:movieId" element={<MovieDetailPage onMessage={setMessage} />} />
+        <Route path="/movies/:movieId" element={<MovieDetailPage onMessage={notify} />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage onMessage={notify} onMoviesChanged={() => loadMovies(moviePage.page)} />
+            </AdminRoute>
+          }
+        />
         <Route
           path="/profile"
           element={
