@@ -3,6 +3,7 @@ package com.sample.controller;
 import com.sample.auth.AuthService;
 import com.sample.dto.AuthResponse;
 import com.sample.dto.LoginRequest;
+import com.sample.dto.RefreshTokenRequest;
 import com.sample.dto.RegisterRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +32,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
     }
 }

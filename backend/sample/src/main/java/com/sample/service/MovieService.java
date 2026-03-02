@@ -34,6 +34,8 @@ public class MovieService {
         movie.setTitle(request.getTitle());
         movie.setDescription(request.getDescription());
         movie.setReleaseYear(request.getReleaseYear());
+        movie.setPosterUrl(normalizeUrl(request.getPosterUrl()));
+        movie.setTrailerUrl(normalizeUrl(request.getTrailerUrl()));
         movie.setGenres(resolveGenres(request.getGenreIds()));
         movie.setIsDeleted(false);
 
@@ -59,6 +61,8 @@ public class MovieService {
         movie.setTitle(request.getTitle());
         movie.setDescription(request.getDescription());
         movie.setReleaseYear(request.getReleaseYear());
+        movie.setPosterUrl(normalizeUrl(request.getPosterUrl()));
+        movie.setTrailerUrl(normalizeUrl(request.getTrailerUrl()));
         movie.setGenres(resolveGenres(request.getGenreIds()));
 
         Movie saved = movieRepository.save(movie);
@@ -103,9 +107,19 @@ public class MovieService {
                 movie.getTitle(),
                 movie.getDescription(),
                 movie.getReleaseYear(),
+                movie.getPosterUrl(),
+                movie.getTrailerUrl(),
                 movie.getGenres().stream().map(Genre::getName).collect(Collectors.toSet()),
                 movie.getCreatedAt(),
                 movie.getUpdatedAt()
         );
+    }
+
+    private String normalizeUrl(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

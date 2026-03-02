@@ -34,6 +34,12 @@ public class Movie {
     @Column(nullable = false)
     private Integer releaseYear;
 
+    @Column(length = 1000)
+    private String posterUrl;
+
+    @Column(length = 1000)
+    private String trailerUrl;
+
     @Column(nullable = false)
     private Boolean isDeleted;
 
@@ -96,6 +102,22 @@ public class Movie {
 
     public void setReleaseYear(Integer releaseYear) {
         this.releaseYear = releaseYear;
+    }
+
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public String getTrailerUrl() {
+        return trailerUrl;
+    }
+
+    public void setTrailerUrl(String trailerUrl) {
+        this.trailerUrl = trailerUrl;
     }
 
     public Boolean getIsDeleted() {

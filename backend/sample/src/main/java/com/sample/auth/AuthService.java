@@ -2,6 +2,7 @@ package com.sample.auth;
 
 import com.sample.dto.AuthResponse;
 import com.sample.dto.LoginRequest;
+import com.sample.dto.RefreshTokenRequest;
 import com.sample.dto.RegisterRequest;
 import com.sample.entity.Role;
 import com.sample.entity.User;
@@ -52,10 +53,12 @@ public class AuthService {
 
         User saved = userRepository.save(user);
         AppUserDetails userDetails = new AppUserDetails(saved);
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         return new AuthResponse(
                 token,
+                refreshToken,
                 "Bearer",
                 saved.getId(),
                 saved.getName(),
@@ -75,10 +78,44 @@ public class AuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
         AppUserDetails userDetails = new AppUserDetails(user);
-        String token = jwtService.generateToken(userDetails);
+        String token = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         return new AuthResponse(
                 token,
+                refreshToken,
+                "Bearer",
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name()
+        );
+    }
+
+    public AuthResponse refresh(RefreshTokenRequest request) {
+        String incomingRefreshToken = request.getRefreshToken().trim();
+
+        String username;
+        try {
+            username = jwtService.extractUsername(incomingRefreshToken);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+        }
+
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+
+        AppUserDetails userDetails = new AppUserDetails(user);
+        if (!jwtService.isRefreshTokenValid(incomingRefreshToken, userDetails)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token expired or invalid");
+        }
+
+        String newAccessToken = jwtService.generateAccessToken(userDetails);
+        String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return new AuthResponse(
+                newAccessToken,
+                newRefreshToken,
                 "Bearer",
                 user.getId(),
                 user.getName(),

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Map;
 
 @Service
 public class JwtService {
@@ -20,11 +21,25 @@ public class JwtService {
         this.jwtProperties = jwtProperties;
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + jwtProperties.getExpirationMs());
 
         return Jwts.builder()
+                .claims(Map.of("type", "access"))
+                .subject(userDetails.getUsername())
+                .issuedAt(now)
+                .expiration(expiry)
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + jwtProperties.getRefreshExpirationMs());
+
+        return Jwts.builder()
+                .claims(Map.of("type", "refresh"))
                 .subject(userDetails.getUsername())
                 .issuedAt(now)
                 .expiration(expiry)
@@ -36,9 +51,23 @@ public class JwtService {
         return extractAllClaims(token).getSubject();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isAccessTokenValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        return username.equals(userDetails.getUsername())
+                && "access".equals(extractTokenType(token))
+                && !isTokenExpired(token);
+    }
+
+    public boolean isRefreshTokenValid(String token, UserDetails userDetails) {
+        String username = extractUsername(token);
+        return username.equals(userDetails.getUsername())
+                && "refresh".equals(extractTokenType(token))
+                && !isTokenExpired(token);
+    }
+
+    public String extractTokenType(String token) {
+        Object type = extractAllClaims(token).get("type");
+        return type == null ? "" : String.valueOf(type);
     }
 
     private boolean isTokenExpired(String token) {

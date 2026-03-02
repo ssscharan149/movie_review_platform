@@ -5,35 +5,51 @@ export default function MoviesPage({ movies, loading, page, totalPages, totalEle
   const hasNext = totalPages > 0 && page < totalPages - 1;
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Movies</h1>
-          <p className="text-sm text-slate-600">Pick a movie and view ratings/reviews in detail.</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Movies</h1>
+          <p className="text-sm text-[var(--text-secondary)]">Pick a movie and view ratings/reviews in detail.</p>
         </div>
-        <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+        <span className="rounded-md bg-[var(--surface-soft)] px-2 py-1 text-xs font-semibold text-[var(--text-secondary)]">
           {totalElements} total
         </span>
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-600">Loading movies...</p>
+        <p className="text-sm text-[var(--text-secondary)]">Loading movies...</p>
       ) : movies.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
+        <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-soft)] p-6 text-sm text-[var(--text-secondary)]">
           No movies available yet. If you are an admin, go to <span className="font-semibold">Admin</span> and create your first movie.
         </div>
       ) : (
         <>
-          <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {movies.map((movie) => (
               <li key={movie.id}>
                 <Link
                   to={`/movies/${movie.id}`}
-                  className="block rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50"
+                  className="fade-slide-up block overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg"
                 >
-                  <div className="text-base font-semibold text-slate-900">{movie.title}</div>
-                  <div className="text-xs text-slate-500">{movie.releaseYear}</div>
-                  <p className="mt-2 line-clamp-3 text-sm text-slate-700">{movie.description}</p>
+                  <div className="flex h-56 items-center justify-center bg-[var(--surface-soft)]">
+                    {movie.posterUrl ? (
+                      <img
+                        src={movie.posterUrl}
+                        alt={`${movie.title} poster`}
+                        className="h-full w-full object-contain p-2 transition duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm font-semibold text-[var(--text-secondary)]">
+                        Poster N/A
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="line-clamp-1 text-base font-semibold text-[var(--text-primary)]">{movie.title}</div>
+                    <div className="text-xs text-[var(--text-secondary)]">{movie.releaseYear}</div>
+                    <p className="mt-2 line-clamp-3 text-sm text-[var(--text-secondary)]">{movie.description}</p>
+                  </div>
                 </Link>
               </li>
             ))}
@@ -44,18 +60,18 @@ export default function MoviesPage({ movies, loading, page, totalPages, totalEle
               type="button"
               disabled={!hasPrev}
               onClick={() => onPageChange(page - 1)}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Previous
             </button>
-            <span className="text-sm text-slate-600">
+            <span className="text-sm text-[var(--text-secondary)]">
               Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
             </span>
             <button
               type="button"
               disabled={!hasNext}
               onClick={() => onPageChange(page + 1)}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Next
             </button>

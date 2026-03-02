@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ToastStack from "./components/ToastStack";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import MovieDetailPage from "./pages/MovieDetailPage";
@@ -65,7 +66,7 @@ function AppShell() {
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl px-4 py-6">
+    <main className="mx-auto min-h-screen max-w-7xl px-4 py-6 text-[var(--text-primary)]">
       <ToastStack toasts={toasts} onClose={dismissToast} />
       <Navbar onMessage={notify} />
 
@@ -110,8 +111,10 @@ function AppShell() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppShell />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppShell />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

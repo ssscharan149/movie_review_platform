@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.Set;
@@ -22,6 +23,18 @@ public class MovieRequest {
     @Min(value = 1888, message = "Release year must be valid")
     @Max(value = 2100, message = "Release year must be valid")
     private Integer releaseYear;
+
+    @Pattern(
+            regexp = "^(https?://).+",
+            message = "posterUrl must be a valid HTTP/HTTPS URL"
+    )
+    private String posterUrl;
+
+    @Pattern(
+            regexp = "^(https?://).+",
+            message = "trailerUrl must be a valid HTTP/HTTPS URL"
+    )
+    private String trailerUrl;
 
     private Set<Long> genreIds;
 
@@ -47,6 +60,22 @@ public class MovieRequest {
 
     public void setReleaseYear(Integer releaseYear) {
         this.releaseYear = releaseYear;
+    }
+
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public String getTrailerUrl() {
+        return trailerUrl;
+    }
+
+    public void setTrailerUrl(String trailerUrl) {
+        this.trailerUrl = trailerUrl;
     }
 
     public Set<Long> getGenreIds() {

@@ -8,6 +8,8 @@ public record MovieResponse(
         String title,
         String description,
         Integer releaseYear,
+        String posterUrl,
+        String trailerUrl,
         Set<String> genres,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

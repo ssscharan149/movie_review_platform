@@ -2,15 +2,57 @@
 
 :root {
   font-family: "Manrope", "Segoe UI", sans-serif;
+  --bg-start: #dbeafe;
+  --bg-mid: #f8fafc;
+  --bg-end: #eef2ff;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --border: #dbe3ef;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --brand: #0f172a;
+}
+
+:root[data-theme="dark"] {
+  --bg-start: #111827;
+  --bg-mid: #0f172a;
+  --bg-end: #020617;
+  --surface: #0b1221;
+  --surface-soft: #111a2e;
+  --border: #243247;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --brand: #2563eb;
 }
 
 body {
   margin: 0;
   min-width: 320px;
-  background: radial-gradient(circle at top left, #dbeafe 0%, #f8fafc 45%, #eef2ff 100%);
-  color: #0f172a;
+  background: radial-gradient(circle at top left, var(--bg-start) 0%, var(--bg-mid) 45%, var(--bg-end) 100%);
+  color: var(--text-primary);
+  scroll-behavior: smooth;
+  transition: background 220ms ease, color 220ms ease;
 }
 
 #root {
   min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-slide-up {
+  animation: fade-slide-up 280ms ease-out;
 }
