@@ -23,13 +23,6 @@ public class RegisterRequest {
     @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     private String password;
 
-    @NotBlank(message = "Role is required")
-    @Pattern(
-            regexp = "^(?i)(USER|ADMIN)$",
-            message = "Role must be either USER or ADMIN"
-    )
-    private String role;
-
     public String getName() {
         return name;
     }
@@ -52,13 +45,5 @@ public class RegisterRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 }

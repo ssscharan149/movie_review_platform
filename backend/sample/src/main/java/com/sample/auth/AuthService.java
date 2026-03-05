@@ -49,7 +49,7 @@ public class AuthService {
         user.setName(request.getName().trim());
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(parseRole(request.getRole()));
+        user.setRole(Role.USER);
 
         User saved = userRepository.save(user);
         AppUserDetails userDetails = new AppUserDetails(saved);
@@ -122,13 +122,5 @@ public class AuthService {
                 user.getEmail(),
                 user.getRole().name()
         );
-    }
-
-    private Role parseRole(String rawRole) {
-        try {
-            return Role.valueOf(rawRole.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role must be either USER or ADMIN");
-        }
     }
 }

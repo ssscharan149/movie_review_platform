@@ -2,11 +2,15 @@ package com.sample;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sample.entity.Role;
+import com.sample.entity.User;
+import com.sample.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -24,6 +28,12 @@ class AuthMovieIntegrationTests extends IntegrationTestBase {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private ObjectMapper objectMapper;
 
@@ -44,8 +54,7 @@ class AuthMovieIntegrationTests extends IntegrationTestBase {
                 {
                   "name": "User One",
                   "email": "%s",
-                  "password": "Password@123",
-                  "role": "USER"
+                  "password": "Password@123"
                 }
                 """.formatted(email);
 
@@ -142,24 +151,44 @@ class AuthMovieIntegrationTests extends IntegrationTestBase {
 
     private String registerAndLogin(String role) throws Exception {
         String email = role.toLowerCase() + "_" + System.nanoTime() + "@example.com";
-        String registerBody = """
-                {
-                  "name": "%s User",
-                  "email": "%s",
-                  "password": "Password@123",
-                  "role": "%s"
-                }
-                """.formatted(role, email, role);
+        String password = "Password@123";
 
-        String registerResponse = mockMvc.perform(post("/api/auth/register")
+        if ("ADMIN".equals(role)) {
+            User admin = new User();
+            admin.setName("ADMIN User");
+            admin.setEmail(email);
+            admin.setPassword(passwordEncoder.encode(password));
+            admin.setRole(Role.ADMIN);
+            userRepository.save(admin);
+        } else {
+            String registerBody = """
+                    {
+                      "name": "%s User",
+                      "email": "%s",
+                      "password": "%s"
+                    }
+                    """.formatted(role, email, password);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(registerBody))
+                    .andExpect(status().isOk());
+        }
+
+        String loginBody = """
+                {
+                  "email": "%s",
+                  "password": "%s"
+                }
+                """.formatted(email, password);
+        String loginResponse = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerBody))
+                        .content(loginBody))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode node = objectMapper.readTree(registerResponse);
+        JsonNode node = objectMapper.readTree(loginResponse);
         return node.get("token").asText();
     }
 
