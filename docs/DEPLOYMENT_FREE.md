@@ -70,27 +70,24 @@ Set these in Railway backend service:
 2. Set `CORS_ALLOWED_ORIGINS` to actual frontend domain only.
 3. Ensure backend responds over HTTPS.
 4. Verify Flyway migration ran successfully.
-5. Create at least one admin user.
+5. Promote exactly one user account to admin via database update.
 
-## Admin Bootstrap (First Admin User)
+## Admin Bootstrap (One-Time Manual Promotion)
 
-Use register API once with ADMIN role:
+Public register endpoint creates `USER` accounts only.
 
-```bash
-curl -X POST https://your-backend-domain/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name":"Admin",
-    "email":"admin@example.com",
-    "password":"Password@123",
-    "role":"ADMIN"
-  }'
+1. Register a normal user from UI/API.
+2. Promote that specific user in DB:
+
+```sql
+UPDATE users
+SET role = 'ADMIN'
+WHERE email = 'admin@example.com';
 ```
 
-After first admin creation, use normal login flow.
+3. Keep all future signups as normal users (no admin registration path in API/UI).
 
 ## Notes
 
 - Free tiers can sleep after inactivity and cold-start on first request.
 - If your free tier blocks MySQL usage or uptime needs increase, move DB to paid managed MySQL.
-

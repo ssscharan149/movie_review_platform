@@ -24,7 +24,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password@123\",\n  \"role\": \"ADMIN\"\n}"
+              "raw": "{\n  \"name\": \"User One\",\n  \"email\": \"user1@example.com\",\n  \"password\": \"Password@123\"\n}"
             },
             "url": "{{baseUrl}}/auth/register"
           },
@@ -331,4 +331,3 @@
     }
   ]
 }
-

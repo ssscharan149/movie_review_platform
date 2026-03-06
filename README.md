@@ -13,6 +13,7 @@ Full-stack IMDb-style MVP built with Java + React.
 ## Core Features
 
 - User registration and login with JWT auth
+- Public registration creates `USER` accounts only
 - Access token + refresh token flow
 - Role-based authorization (`USER`, `ADMIN`)
 - Browse movies with pagination

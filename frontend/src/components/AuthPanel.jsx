@@ -10,7 +10,6 @@ export default function AuthPanel({ onSuccess, onError }) {
     name: "",
     email: "",
     password: "",
-    role: "USER",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,10 +43,6 @@ export default function AuthPanel({ onSuccess, onError }) {
       nextErrors.password = "Password must be at least 6 characters";
     }
 
-    if (mode === "register" && !form.role) {
-      nextErrors.role = "Role must not be empty";
-    }
-
     setErrors(nextErrors);
 
     return {
@@ -58,7 +53,6 @@ export default function AuthPanel({ onSuccess, onError }) {
               name: cleanedName,
               email: cleanedEmail,
               password: cleanedPassword,
-              role: form.role,
             }
           : {
               email: cleanedEmail,
@@ -157,16 +151,6 @@ export default function AuthPanel({ onSuccess, onError }) {
           required
         />
         {errors.password && <p className="text-xs font-medium text-rose-600">{errors.password}</p>}
-        {mode === "register" && (
-          <>
-            <select className={`${inputClass} ${errors.role ? "border-rose-400 ring-rose-100" : ""}`} name="role" value={form.role} onChange={handleChange}>
-              <option value="USER">USER</option>
-              <option value="ADMIN">ADMIN</option>
-            </select>
-            {errors.role && <p className="text-xs font-medium text-rose-600">{errors.role}</p>}
-          </>
-        )}
-
         <button
           type="submit"
           disabled={isSubmitting}
