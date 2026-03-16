@@ -17,8 +17,6 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    private static final String FALLBACK_SECRET = "fallback-secret-change-me-in-production-please-123456";
-
     private final JwtProperties jwtProperties;
 
     public JwtService(JwtProperties jwtProperties) {
@@ -89,7 +87,11 @@ public class JwtService {
     private SecretKey getSigningKey() {
         String secret = jwtProperties.getSecret();
         if (secret == null || secret.isBlank()) {
-            secret = FALLBACK_SECRET;
+            throw new IllegalStateException("JWT secret is not configured. Set JWT_SECRET in environment variables.");
+        }
+
+        if (secret.length() < 32) {
+            throw new IllegalStateException("JWT secret is too short. Use at least 32 characters.");
         }
 
         try {
