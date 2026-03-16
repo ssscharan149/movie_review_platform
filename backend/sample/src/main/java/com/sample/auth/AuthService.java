@@ -83,8 +83,15 @@ public class AuthService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
         AppUserDetails userDetails = new AppUserDetails(user);
-        String token = jwtService.generateAccessToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
+        String token;
+        String refreshToken;
+        try {
+            token = jwtService.generateAccessToken(userDetails);
+            refreshToken = jwtService.generateRefreshToken(userDetails);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Authentication token generation failed. Check JWT configuration");
+        }
 
         return new AuthResponse(
                 token,
