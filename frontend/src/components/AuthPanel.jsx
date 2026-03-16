@@ -11,6 +11,7 @@ export default function AuthPanel({ onSuccess, onError }) {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -140,16 +141,25 @@ export default function AuthPanel({ onSuccess, onError }) {
           required
         />
         {errors.email && <p className="text-xs font-medium text-rose-600">{errors.email}</p>}
-        <input
-          className={`${inputClass} ${errors.password ? "border-rose-400 ring-rose-100" : ""}`}
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          autoComplete={mode === "register" ? "new-password" : "current-password"}
-          required
-        />
+        <div className="relative">
+          <input
+            className={`${inputClass} pr-20 ${errors.password ? "border-rose-400 ring-rose-100" : ""}`}
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            autoComplete={mode === "register" ? "new-password" : "current-password"}
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-slate-600 hover:text-slate-900"
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
         {errors.password && <p className="text-xs font-medium text-rose-600">{errors.password}</p>}
         <button
           type="submit"

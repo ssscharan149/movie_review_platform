@@ -3,9 +3,7 @@ package com.sample.security;
 import com.sample.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.WeakKeyException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -94,22 +92,12 @@ public class JwtService {
             secret = FALLBACK_SECRET;
         }
 
-        byte[] keyBytes;
         try {
-            keyBytes = Decoders.BASE64.decode(secret);
-        } catch (IllegalArgumentException ex) {
-            keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        }
-
-        try {
-            return Keys.hmacShaKeyFor(keyBytes);
-        } catch (WeakKeyException ex) {
-            try {
-                byte[] hashed = MessageDigest.getInstance("SHA-256").digest(keyBytes);
-                return Keys.hmacShaKeyFor(hashed);
-            } catch (NoSuchAlgorithmException digestEx) {
-                throw new IllegalStateException("Unable to initialize JWT signing key", digestEx);
-            }
+            byte[] hashed = MessageDigest.getInstance("SHA-256")
+                    .digest(secret.getBytes(StandardCharsets.UTF_8));
+            return Keys.hmacShaKeyFor(hashed);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("Unable to initialize JWT signing key", ex);
         }
     }
 }
