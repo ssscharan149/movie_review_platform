@@ -6,7 +6,7 @@ Full-stack IMDb-style MVP built with Java + React.
 
 - Frontend: React, Vite, Tailwind, Axios, React Router
 - Backend: Spring Boot 4, Spring Security, Spring Data JPA, Flyway, JWT
-- Database: MySQL 8
+- Database: MySQL 8 / Railway MySQL
 - CI: GitHub Actions
 - Test Infra: JUnit + MockMvc + Testcontainers
 
@@ -31,83 +31,57 @@ Full-stack IMDb-style MVP built with Java + React.
 - `docker-compose.yml`: full app stack (db + backend + frontend)
 - `.github/workflows/ci.yml`: CI pipeline
 
-## Configuration Needed (Mandatory)
+## Local Setup
+
+### Root environment
 
 Create a root `.env` file (copy from `.env.example`).
 
-### Required values
+Required values:
 
-- `MYSQL_ROOT_PASSWORD`: MySQL root password
-- `APP_DB_USER`: App DB username
-- `APP_DB_PASSWORD`: App DB password
-- `JWT_SECRET`: Base64 secret for JWT signing (strong secret required)
-- `JWT_EXPIRATION_MS`: access token lifetime in ms
-- `JWT_REFRESH_EXPIRATION_MS`: refresh token lifetime in ms
-- `CORS_ALLOWED_ORIGINS`: comma-separated frontend origins (example `http://localhost:3000,http://localhost:5173`)
+- `MYSQL_ROOT_PASSWORD`
+- `APP_DB_USER`
+- `APP_DB_PASSWORD`
+- `JWT_SECRET` minimum 32 characters
+- `JWT_EXPIRATION_MS`
+- `JWT_REFRESH_EXPIRATION_MS`
+- `CORS_ALLOWED_ORIGINS`
 
-### Optional values
+Optional values:
 
-- `VITE_CLOUDINARY_CLOUD_NAME`: for poster upload in admin UI
-- `VITE_CLOUDINARY_UPLOAD_PRESET`: unsigned upload preset
+- `VITE_CLOUDINARY_CLOUD_NAME`
+- `VITE_CLOUDINARY_UPLOAD_PRESET`
 
-## Quick Start (Docker Recommended)
-
-### 1. Prepare env
+### Docker quick start
 
 ```bash
 cp .env.example .env
+docker compose up --build
 ```
 
 PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
-```
-
-### 2. Start full stack
-
-```bash
 docker compose up --build
 ```
 
-### 3. Access services
+Access locally:
 
 - Frontend: `http://localhost:3000`
-- Backend API base: `http://localhost:8080/api`
-- MySQL host port: `localhost:3307`
+- Backend API: `http://localhost:8080/api`
+- MySQL: `localhost:3307`
 
-### 4. Stop stack
+### Run without Docker
 
-```bash
-docker compose down
-```
-
-Remove DB volume too:
-
-```bash
-docker compose down -v
-```
-
-## Local Run (Without Docker)
-
-### Backend
-
-1. Create env vars in your shell:
-- `SQL_PASS`
-- `JWT_SECRET`
-- `JWT_EXPIRATION_MS` (optional)
-- `JWT_REFRESH_EXPIRATION_MS` (optional)
-
-2. Start backend:
+Backend:
 
 ```powershell
 cd backend/sample
 .\mvnw.cmd spring-boot:run
 ```
 
-### Frontend
-
-1. Create `frontend/.env`:
+Frontend `frontend/.env`:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080/api
@@ -115,7 +89,7 @@ VITE_CLOUDINARY_CLOUD_NAME=
 VITE_CLOUDINARY_UPLOAD_PRESET=
 ```
 
-2. Start frontend:
+Frontend run:
 
 ```powershell
 cd frontend
@@ -123,30 +97,143 @@ npm ci
 npm run dev
 ```
 
+For verbose local SQL logs, run backend with:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE="dev"
+.\mvnw.cmd spring-boot:run
+```
+
 ## Database and Migrations
 
 - Flyway migrations are in `backend/sample/src/main/resources/db/migration`
 - Current baseline: `V1__init_schema.sql`
 - Schema changes should be added as new migration files only
+- Railway deployment uses `spring.flyway.baseline-on-migrate=true`
+
+If you import an existing SQL dump into Railway and Flyway validation fails, drop the imported history table and redeploy:
+
+```sql
+DROP TABLE IF EXISTS flyway_schema_history;
+```
+
+## Railway Deployment
+
+This repository has been deployed successfully on Railway with three services.
+
+- Backend: Spring Boot service from `backend/sample`
+- Frontend: Dockerfile-based Nginx service from `frontend`
+- Database: Railway MySQL
+
+### Backend Railway setup
+
+Root directory:
+
+- `backend/sample`
+
+Required variables:
+
+- `SPRING_DATASOURCE_URL=jdbc:mysql://mysql.railway.internal:3306/movie_platform?sslMode=DISABLED&allowPublicKeyRetrieval=true`
+- `SPRING_DATASOURCE_USERNAME=<Railway MySQL username>`
+- `SPRING_DATASOURCE_PASSWORD=<Railway MySQL password>`
+- `JWT_SECRET=<minimum 32 character secret>`
+- `JWT_EXPIRATION_MS=86400000`
+- `JWT_REFRESH_EXPIRATION_MS=172800000`
+- `CORS_ALLOWED_ORIGINS=https://<your-frontend-domain>`
+
+Important notes:
+
+- Use `mysql.railway.internal` only inside Railway services.
+- For MySQL Workbench or external import tools, use the public TCP proxy from the Railway MySQL Connect tab.
+- Login token generation depends on a valid `JWT_SECRET`.
+
+### Frontend Railway setup
+
+Root directory:
+
+- `frontend`
+
+Deployment mode:
+
+- Dockerfile
+
+Required variable:
+
+- `VITE_API_BASE_URL=https://<your-backend-domain>/api`
+
+Networking:
+
+- Generate a public domain
+- Use port `80`
+
+Important notes:
+
+- The frontend does not proxy `/api` through Nginx.
+- API requests go directly to the backend URL set in `VITE_API_BASE_URL`.
+- Because Vite injects env values at build time, changing `VITE_API_BASE_URL` requires rebuild/redeploy.
+
+### Railway MySQL data import
+
+Recommended flow:
+
+1. Create Railway MySQL service.
+2. Use a public TCP proxy for Workbench access.
+3. Create/select schema.
+4. Import `movie_platform.sql` first.
+5. Import `movie_platform_data.sql` second.
+6. Configure backend to use internal Railway MySQL host.
+
+## Troubleshooting
+
+### CORS error in browser
+
+Set backend variable exactly to the frontend origin:
+
+- `CORS_ALLOWED_ORIGINS=https://<your-frontend-domain>`
+
+Do not add a trailing slash.
+
+### Login returns `500`
+
+Check:
+
+- `JWT_SECRET` exists in Railway backend variables
+- `JWT_SECRET` is at least 32 characters
+- backend latest deployment includes JWT fixes
+
+### Frontend URL returns `502`
+
+Check:
+
+- frontend service uses `frontend/Dockerfile`
+- Railway public domain is mapped to port `80`
+- `VITE_API_BASE_URL` points to live backend `/api`
+
+### Flyway validation failed after importing SQL dump
+
+Run:
+
+```sql
+DROP TABLE IF EXISTS flyway_schema_history;
+```
+
+Then redeploy backend.
+
+### MySQL Workbench cannot connect
+
+- `mysql.railway.internal` is private
+- use Railway MySQL public proxy host/port for external tools
 
 ## Running Tests
 
-### Standard tests
+Standard tests:
 
 ```powershell
 cd backend/sample
 .\mvnw.cmd test
 ```
 
-### Integration tests with Testcontainers
-
-Docker must be running. On Windows, if needed:
-
-```powershell
-$env:DOCKER_HOST="tcp://localhost:2375"
-```
-
-Run specific suites:
+Specific integration suites:
 
 ```powershell
 .\mvnw.cmd -Dtest=AuthMovieIntegrationTests test
@@ -160,29 +247,6 @@ Workflow: `.github/workflows/ci.yml`
 - Backend: compile + tests
 - Frontend: install + build
 - Runs on push/PR to `main`/`master`
-
-## Hosting Checklist (Mandatory Before Production)
-
-1. Use strong secrets and passwords (never commit real secrets).
-2. Configure CORS to real frontend domain only.
-3. Use HTTPS with reverse proxy (Nginx/Caddy/Traefik).
-4. Reduce verbose SQL logging in production.
-5. Keep `ddl-auto=none`; use Flyway migrations only.
-6. Ensure CI is green before deploy.
-7. Add backups for MySQL volume.
-
-## Basic Deployment Path
-
-1. Provision VM (AWS/Azure/DigitalOcean/etc.).
-2. Install Docker + Docker Compose.
-3. Clone repo and set `.env`.
-4. Run:
-
-```bash
-docker compose up -d --build
-```
-
-5. Configure domain + TLS on reverse proxy.
 
 ## Extra Docs
 
