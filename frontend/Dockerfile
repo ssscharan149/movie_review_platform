@@ -17,8 +17,9 @@ ENV VITE_CLOUDINARY_UPLOAD_PRESET=$VITE_CLOUDINARY_UPLOAD_PRESET
 RUN npm run build
 
 FROM nginx:1.27-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
+ENV PORT=80
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 
